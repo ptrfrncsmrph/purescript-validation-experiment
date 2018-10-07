@@ -1,7 +1,7 @@
 **NOTE:** This repo is a fork of [jkachmar/purescript-validation-experiment](https://github.com/jkachmar/purescript-validation-experiment). Notable changes:
 
 1. Migrated from `bower` to `psc-package`
-2. Updated from PureScript `0.12.0` to `0.11.7`
+2. Updated from PureScript `0.11.7` to `0.12.0`
 
 To do:
 
