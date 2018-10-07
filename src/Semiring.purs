@@ -137,6 +137,14 @@ data Contact
   = Email String
   | PhoneNumber String
 
+-- | Derive a `Generic` instance for `Contact` so we can get a
+-- | `Show` instance to print to the console.
+derive instance genericContact :: Generic.Generic Contact _
+
+-- | Derive `show` for `Contact` using the `Generic` instance.
+instance showContact :: Show Contact where
+  show = Generic.Show.genericShow
+
 -- | Validate that the field of a form is non-empty and has a valid email
 -- | address.
 validateEmail :: String -> Validation.V ValidationErrors Contact
@@ -162,6 +170,14 @@ validateContact contact = Bifunctor.lmap BadContact $
 -- | Newtype wrapper for a form's password field
 newtype Password = Password String
 
+-- | Derive a `Generic` instance for `Password` so we can get a
+-- | `Show` instance to print to the console.
+derive instance genericPassword :: Generic.Generic Password _
+
+-- | Derive `show` for `Password` using the `Generic` instance.
+instance showPassword :: Show Password where
+  show = Generic.Show.genericShow
+
 -- | Validate that the field of a form is non-empty, has at least one special
 -- | character, and is longer than `passwordMinLength`.
 validatePassword :: String -> Validation.V FormError Password
@@ -173,20 +189,20 @@ validatePassword password =
 
 --------------------------------------------------------------------------------
 -- | Type alias for an unvalidated version of our simple form, note how the
--- | email and password fields are simple strings.
+-- | contact and password fields are simple strings.
 type UnvalidatedForm =
   { contact  :: String
   , password :: String
   }
 
--- | Type alias for a validated version of our simple form, note how the email
+-- | Type alias for a validated version of our simple form, note how the contact
 -- | and password fields are wrapped in newtypes.
 type ValidatedForm =
   { contact  :: Contact
   , password :: Password
   }
 
--- | Validate that a form contains a valid email and a valid password.
+-- | Validate that a form contains a valid contact and a valid password.
 validateForm :: UnvalidatedForm -> Validation.V FormErrors ValidatedForm
 validateForm {contact, password} = {contact: _, password: _}
   <$> (Bifunctor.lmap Semiring.Free.free $ validateContact contact)
@@ -258,4 +274,4 @@ main = do
       -- `FormError`s to an `Array` too for easier printing
       (Array.fromFoldable <<< ((map <<< map) (Array.nub <<< Array.fromFoldable)))
       -- Unsafe stringify the record, in lieu of a `Show` instance.
-      (Unsafe.Global.unsafeStringify)
+      show
