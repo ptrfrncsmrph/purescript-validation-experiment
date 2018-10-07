@@ -1,3 +1,5 @@
+**NOTE:** This repo is a fork of [jkachmar/purescript-validation-experiment.git](https://github.com/jkachmar/purescript-validation-experiment).
+
 # purescript-validation-experiment
 
 ## What Is this
@@ -11,11 +13,11 @@ First, ensure that you have `node` and `npm` installed.
 
 Then, clone this repo...
 
-    git clone git@github.com:jkachmar/purescript-validation-experiment.git
+    git clone git@github.com:ptrfrncsmrph/purescript-validation-experiment.git
 
 ...install the dependencies and build the project...
 
-    npm install  
+    npm install
 
 ...and run the example...
 
@@ -24,21 +26,20 @@ Then, clone this repo...
 ...which should print the following to the console:
 
     Semigroup Validation:
-    (Invalid [(BadEmail [EmptyField,InvalidEmailAddress]),(BadPassword [EmptyField,NoSpecialCharacter,LessThanMinLength])])
-    (Invalid [(BadEmail [InvalidEmailAddress]),(BadPassword [NoSpecialCharacter])])
-    (Invalid [(BadPassword [NoSpecialCharacter])])
-    (Invalid [(BadPassword [LessThanMinLength])])
-    (Valid "{\"email\":\"good@email.com\",\"password\":\"abc123+-=\"}")
+    invalid ([(BadEmail [EmptyField,InvalidEmailAddress]),(BadPassword [EmptyField,NoSpecialCharacter,LessThanMinLength])])
+    invalid ([(BadEmail [InvalidEmailAddress]),(BadPassword [NoSpecialCharacter])])
+    invalid ([(BadPassword [NoSpecialCharacter])])
+    invalid ([(BadPassword [LessThanMinLength])])
 
 
     Semiring Validation:
-    Invalid ([(BadContact [EmptyField,InvalidEmailAddress,InvalidPhoneNumber]),(BadPassword [EmptyField,NoSpecialCharacter,LessThanMinLength])])
-    Invalid ([(BadContact [InvalidEmailAddress,InvalidPhoneNumber]),(BadPassword [NoSpecialCharacter])])
-    Invalid ([(BadPassword [NoSpecialCharacter])])
-    Invalid ([(BadPassword [LessThanMinLength])])
-    Invalid ([(BadContact [InvalidEmailAddress,InvalidPhoneNumber])])
-    Valid ("{\"contact\":{\"value0\":\"good@email.com\"},\"password\":\"abc123+-=\"}")
-    Valid ("{\"contact\":{\"value0\":\"+1 (555) 555-5555\"},\"password\":\"abc123+-=\"}")
+    invalid ([(BadContact [EmptyField,InvalidEmailAddress,InvalidPhoneNumber]),(BadPassword [EmptyField,NoSpecialCharacter,LessThanMinLength])])
+    invalid ([(BadContact [InvalidEmailAddress,InvalidPhoneNumber]),(BadPassword [NoSpecialCharacter])])
+    invalid ([(BadPassword [NoSpecialCharacter])])
+    invalid ([(BadPassword [LessThanMinLength])])
+    invalid ([(BadContact [InvalidEmailAddress,InvalidPhoneNumber])])
+    pure ("{\"contact\":{\"value0\":\"good@email.com\"},\"password\":\"abc123+-=\"}")
+    pure ("{\"contact\":{\"value0\":\"+1 (555) 555-5555\"},\"password\":\"abc123+-=\"}")
 
 Note that the `Semiring` validator has a record with a `value0` key in its
 `Valid` results. This is due to the unsafe stringification of `Contact`, which
