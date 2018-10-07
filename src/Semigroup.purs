@@ -2,14 +2,17 @@ module Semigroup where
 
 import Prelude
 
+import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Bifunctor as Bifunctor
 import Data.Either as Either
-import Data.Foldable (sequence_)
+import Data.Foldable as Foldable
 import Data.Generic.Rep as Generic
 import Data.Generic.Rep.Show as Generic.Show
+import Data.List as List
 import Data.List.NonEmpty as NonEmptyList
 import Data.String as String
+import Data.String.CodeUnits as String.CodeUnits
 import Data.String.Regex as Regex
 import Data.String.Regex.Flags as Regex.Flags
 import Data.Validation.Semigroup as Validation
@@ -17,6 +20,9 @@ import Effect (Effect)
 import Effect.Console as Console
 import Global.Unsafe as Unsafe.Global
 import Partial.Unsafe as Partial
+import Text.Parsing.StringParser as StringParser
+import Text.Parsing.StringParser.CodeUnits as CodeUnits
+import Text.Parsing.StringParser.Combinators as Combinators
 
 --------------------------------------------------------------------------------
 -- | Utility function to unsafely construct a regular expression from a pattern
@@ -41,6 +47,22 @@ passwordRegex = unsafeRegexFromString "\\W"
 -- | Minimum password length.
 passwordMinLength :: Int
 passwordMinLength = 8
+
+--------------------------------------------------------------------------------
+-- | Email parser
+parseEmail :: StringParser.Parser String
+parseEmail = StringParser.try $ do
+  firstLetter <- CodeUnits.alphaNum
+  restOfAddr <- Combinators.many $ CodeUnits.alphaNum <|> CodeUnits.char '.'
+  _ <- CodeUnits.char '@'
+  domain <- Combinators.many1 $ CodeUnits.alphaNum <|> CodeUnits.char '.'
+  let full' = 
+        pure firstLetter 
+        <> restOfAddr 
+        <> pure '@' 
+        <> NonEmptyList.toList domain
+  let full = Foldable.foldMap String.CodeUnits.singleton full'
+  pure full
 
 --------------------------------------------------------------------------------
 data ValidationError
@@ -71,6 +93,15 @@ validateEmailRegex :: String -> Validation.V ValidationErrors String
 validateEmailRegex email
   | Regex.test emailRegex email = pure email
   | otherwise = Validation.invalid $ NonEmptyList.singleton InvalidEmailAddress
+
+-- | Validate that the field of a form is a valid email address.
+-- | TODO: Make this actually do something instead of just Left/Right
+-- |   check on parser result
+validateEmailWithParser :: String -> Validation.V ValidationErrors String
+validateEmailWithParser email =
+  case (StringParser.runParser parseEmail email) of
+    Either.Left _ -> Validation.invalid $ NonEmptyList.singleton InvalidEmailAddress
+    Either.Right _ -> pure email
 
 -- | Validate that the field of a form has at least one special character.
 validatePasswordRegex :: String -> Validation.V ValidationErrors String
@@ -118,7 +149,7 @@ validateEmail :: String -> Validation.V FormError Email
 validateEmail email =
   Bifunctor.bimap BadEmail Email
   $  validateNonEmpty email
-  *> validateEmailRegex email
+  *> validateEmailWithParser email
 
 -- | Newtype wrapper for a form's password field
 newtype Password = Password String
@@ -179,7 +210,7 @@ testForm5 = {email: "good@email.com", password: "abc123+-="}
 -- | the output and printing it to the console.
 main :: Effect Unit
 main = 
-  sequence_ <<< map (Console.logShow <<< formatValidationOutput <<< validateForm) 
+  mapM_ (Console.logShow <<< formatValidationOutput <<< validateForm) 
     $ [ testForm1
       , testForm2
       , testForm3
@@ -187,6 +218,7 @@ main =
       , testForm5
       ]
   where
+    mapM_ f = Foldable.sequence_ <<< map f
     formatValidationOutput =
       Bifunctor.bimap
       (Array.fromFoldable <<< ((map <<< map) (Array.fromFoldable)))

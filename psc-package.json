@@ -3,6 +3,7 @@
   "set": "psc-0.12.0-20181005",
   "source": "https://github.com/purescript/package-sets.git",
   "depends": [
+    "string-parsers",
     "foldable-traversable",
     "console",
     "validation",
