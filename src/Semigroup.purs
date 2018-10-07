@@ -75,7 +75,7 @@ validateEmailRegex email
 -- | Validate that the field of a form has at least one special character.
 validatePasswordRegex :: String -> Validation.V ValidationErrors String
 validatePasswordRegex password
-  | Regex.test passwordRegex password = pure password  
+  | Regex.test passwordRegex password = pure password
   | otherwise = Validation.invalid $ NonEmptyList.singleton NoSpecialCharacter
 
 -- | Validate that the field of a form is longer than `passwordMinLength`.
@@ -115,7 +115,7 @@ newtype Email = Email String
 -- | Validate that the field of a form is non-empty and has a valid email
 -- | address.
 validateEmail :: String -> Validation.V FormError Email
-validateEmail email = 
+validateEmail email =
   Bifunctor.bimap BadEmail Email
   $  validateNonEmpty email
   *> validateEmailRegex email
@@ -184,6 +184,7 @@ main =
       , testForm2
       , testForm3
       , testForm4
+      , testForm5
       ]
   where
     formatValidationOutput =
