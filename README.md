@@ -38,6 +38,7 @@ Then, clone this repo...
     invalid ([(BadEmail [InvalidEmailAddress]),(BadPassword [NoSpecialCharacter])])
     invalid ([(BadPassword [NoSpecialCharacter])])
     invalid ([(BadPassword [LessThanMinLength])])
+    pure ("{\"email\":\"good@email.com\",\"password\":\"abc123+-=\"}")
 
 
     Semiring Validation:
