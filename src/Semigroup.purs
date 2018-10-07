@@ -2,11 +2,10 @@ module Semigroup where
 
 import Prelude
 
-import Control.Monad.Eff as Eff
-import Control.Monad.Eff.Console as Eff.Console
 import Data.Array as Array
 import Data.Bifunctor as Bifunctor
 import Data.Either as Either
+import Data.Foldable (sequence_)
 import Data.Generic.Rep as Generic
 import Data.Generic.Rep.Show as Generic.Show
 import Data.List.NonEmpty as NonEmptyList
@@ -14,6 +13,8 @@ import Data.String as String
 import Data.String.Regex as Regex
 import Data.String.Regex.Flags as Regex.Flags
 import Data.Validation.Semigroup as Validation
+import Effect (Effect)
+import Effect.Console as Console
 import Global.Unsafe as Unsafe.Global
 import Partial.Unsafe as Partial
 
@@ -74,7 +75,7 @@ validateEmailRegex email
 -- | Validate that the field of a form has at least one special character.
 validatePasswordRegex :: String -> Validation.V ValidationErrors String
 validatePasswordRegex password
-  | Regex.test passwordRegex password = pure password
+  | Regex.test passwordRegex password = pure password  
   | otherwise = Validation.invalid $ NonEmptyList.singleton NoSpecialCharacter
 
 -- | Validate that the field of a form is longer than `passwordMinLength`.
@@ -114,7 +115,7 @@ newtype Email = Email String
 -- | Validate that the field of a form is non-empty and has a valid email
 -- | address.
 validateEmail :: String -> Validation.V FormError Email
-validateEmail email =
+validateEmail email = 
   Bifunctor.bimap BadEmail Email
   $  validateNonEmpty email
   *> validateEmailRegex email
@@ -176,30 +177,16 @@ testForm5 = {email: "good@email.com", password: "abc123+-="}
 --------------------------------------------------------------------------------
 -- | Run a form validation against all of the test forms we created, formatting
 -- | the output and printing it to the console.
-main :: ∀ e. Eff.Eff (console :: Eff.Console.CONSOLE | e) Unit
-main = do
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm1
-  -- >(Invalid [(BadEmail [EmptyField,InvalidEmailAddress]),(BadPassword [EmptyField,NoSpecialCharacter,LessThanMinLength])])
-
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm2
-  -- > (Invalid [(BadEmail [InvalidEmailAddress]),(BadPassword [NoSpecialCharacter])])
-
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm3
-  -- > (Invalid [(BadPassword [NoSpecialCharacter])])
-
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm4
-  -- > (Invalid [(BadPassword [LessThanMinLength])])
-
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm5
-  -- > (Valid "{\"email\":\"good@email.com\",\"password\":\"abc123+-=\"}")
-
+main :: Effect Unit
+main = 
+  sequence_ <<< map (Console.logShow <<< formatValidationOutput <<< validateForm) 
+    $ [ testForm1
+      , testForm2
+      , testForm3
+      , testForm4
+      ]
   where
-    -- Format the output of our validator.
     formatValidationOutput =
       Bifunctor.bimap
-      -- Convert the `NonEmptyList` of `ValidationError` to an `Array`, eliminate any
-      -- duplicate validation errors, and convert the `NonEmptyList` of `FormError`s
-      -- to an `Array` too for easier printing
       (Array.fromFoldable <<< ((map <<< map) (Array.fromFoldable)))
-      -- Unsafe stringify the record, in lieu of a `Show` instance.
       (Unsafe.Global.unsafeStringify)

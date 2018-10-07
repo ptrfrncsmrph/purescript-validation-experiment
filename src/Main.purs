@@ -2,15 +2,15 @@ module Main where
 
 import Prelude
 
-import Control.Monad.Eff as Eff
-import Control.Monad.Eff.Console as Eff.Console
+import Effect (Effect)
+import Effect.Class.Console (log)
 import Semigroup as Semigroup
 import Semiring as Semiring
 
-main :: ∀ eff. Eff.Eff (console :: Eff.Console.CONSOLE | eff) Unit
+main :: Effect Unit
 main = do
-  Eff.Console.log "Semigroup Validation:"
+  log "Semigroup Validation:"
   Semigroup.main
-  Eff.Console.log "\n"
-  Eff.Console.log "Semiring Validation:"
+  log "\n"
+  log "Semiring Validation:"
   Semiring.main

@@ -2,20 +2,21 @@ module Semiring where
 
 import Prelude
 
-import Control.Monad.Eff as Eff
-import Control.Monad.Eff.Console as Eff.Console
 import Control.Alt ((<|>))
 import Data.Array as Array
 import Data.Bifunctor as Bifunctor
 import Data.Either as Either
 import Data.Generic.Rep as Generic
 import Data.Generic.Rep.Eq as Generic.Eq
+import Data.Generic.Rep.Ord as Generic.Ord
 import Data.Generic.Rep.Show as Generic.Show
 import Data.Semiring.Free as Semiring.Free
 import Data.String as String
 import Data.String.Regex as Regex
 import Data.String.Regex.Flags as Regex.Flags
 import Data.Validation.Semiring as Validation
+import Effect (Effect)
+import Effect.Console as Console
 import Global.Unsafe as Unsafe.Global
 import Partial.Unsafe as Partial
 
@@ -64,6 +65,10 @@ derive instance genericValidationError :: Generic.Generic ValidationError _
 -- | Derive an `Eq` instance for `ValidationError` using the `Generic` instance.
 instance eqValidationError :: Eq ValidationError where
   eq = Generic.Eq.genericEq
+
+-- | Derive an `Ord` instance for `ValidationError` using the `Generic` instance.
+instance ordValidationError :: Ord ValidationError where
+  compare = Generic.Ord.genericCompare
 
 -- | Derive `show` for `ValidationError` using the `Generic` instance.
 instance showValidationError :: Show ValidationError where
@@ -219,28 +224,28 @@ testForm7 = {contact: "+1 (555) 555-5555", password: "abc123+-="}
 --------------------------------------------------------------------------------
 -- | Run a form validation against all of the test forms we created, formatting
 -- | the output and printing it to the console.
-main :: ∀ e. Eff.Eff (console :: Eff.Console.CONSOLE | e) Unit
+main :: Effect Unit
 main = do
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm1
+  Console.logShow $ formatValidationOutput $ validateForm testForm1
   -- > Invalid ([(BadContact [EmptyField,InvalidEmailAddress,InvalidPhoneNumber]),(BadPassword [EmptyField,NoSpecialCharacter,LessThanMinLength])])
 
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm2
+  Console.logShow $ formatValidationOutput $ validateForm testForm2
   -- > Invalid ([(BadContact [InvalidEmailAddress,InvalidPhoneNumber]),(BadPassword [NoSpecialCharacter])])
 
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm3
+  Console.logShow $ formatValidationOutput $ validateForm testForm3
   -- > Invalid ([(BadPassword [NoSpecialCharacter])])
 
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm4
+  Console.logShow $ formatValidationOutput $ validateForm testForm4
   -- > Invalid ([(BadPassword [LessThanMinLength])])
 
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm5
+  Console.logShow $ formatValidationOutput $ validateForm testForm5
   -- > Invalid ([(BadContact [InvalidEmailAddress,InvalidPhoneNumber])])
 
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm6
+  Console.logShow $ formatValidationOutput $ validateForm testForm6
   -- > Valid ("{\"contact\":{\"value0\":\"good@email.com\"},\"password\":\"abc123+-=\"}")
   -- NOTE: The `value0` here is an unsafe stringification of the `Contact` type
 
-  Eff.Console.logShow $ formatValidationOutput $ validateForm testForm7
+  Console.logShow $ formatValidationOutput $ validateForm testForm7
   -- > Valid ("{\"contact\":{\"value0\":\"+1 (555) 555-5555\"},\"password\":\"abc123+-=\"}")
   -- NOTE: The `value0` here is an unsafe stringification of the `Contact` type
 
