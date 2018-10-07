@@ -9,7 +9,6 @@ import Data.Either as Either
 import Data.Foldable as Foldable
 import Data.Generic.Rep as Generic
 import Data.Generic.Rep.Show as Generic.Show
-import Data.List as List
 import Data.List.NonEmpty as NonEmptyList
 import Data.String as String
 import Data.String.CodeUnits as String.CodeUnits

@@ -2,8 +2,7 @@
   "name": "purescript-validation-experiment",
   "scripts": {
     "build": "pulp --psc-package build",
-    "postinstall-init": "psc-package init --set psc-0.12.0-20181005 --source https://github.com/purescript/package-sets.git",
-    "postinstall": "npm run -s postinstall-init & psc-package install",
+    "postinstall": "psc-package install",
     "validate": "pulp --psc-package run"
   },
   "repository": {
