@@ -17,7 +17,6 @@ import Data.String.Regex.Flags as Regex.Flags
 import Data.Validation.Semiring as Validation
 import Effect (Effect)
 import Effect.Console as Console
-import Global.Unsafe as Unsafe.Global
 import Partial.Unsafe as Partial
 
 --------------------------------------------------------------------------------
@@ -273,5 +272,4 @@ main = do
       -- any duplicate validation errors, and convert the `NonEmptyList` of
       -- `FormError`s to an `Array` too for easier printing
       (Array.fromFoldable <<< ((map <<< map) (Array.nub <<< Array.fromFoldable)))
-      -- Unsafe stringify the record, in lieu of a `Show` instance.
       show

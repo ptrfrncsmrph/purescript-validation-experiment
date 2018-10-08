@@ -17,7 +17,6 @@ import Data.String.Regex.Flags as Regex.Flags
 import Data.Validation.Semigroup as Validation
 import Effect (Effect)
 import Effect.Console as Console
-import Global.Unsafe as Unsafe.Global
 import Partial.Unsafe as Partial
 import Text.Parsing.StringParser as StringParser
 import Text.Parsing.StringParser.CodeUnits as CodeUnits
@@ -142,6 +141,14 @@ type FormErrors = NonEmptyList.NonEmptyList FormError
 -- | Newtype wrapper for a form's email field
 newtype Email = Email String
 
+-- | Derive a `Generic` instance for `Email` so we can get a
+-- | `Show` instance to print to the console.
+derive instance genericEmail :: Generic.Generic Email _
+
+-- | Derive `show` for `Email` using the `Generic` instance.
+instance showEmail :: Show Email where
+  show = Generic.Show.genericShow
+
 -- | Validate that the field of a form is non-empty and has a valid email
 -- | address.
 validateEmail :: String -> Validation.V FormError Email
@@ -152,6 +159,14 @@ validateEmail email =
 
 -- | Newtype wrapper for a form's password field
 newtype Password = Password String
+
+-- | Derive a `Generic` instance for `Password` so we can get a
+-- | `Show` instance to print to the console.
+derive instance genericPassword :: Generic.Generic Password _
+
+-- | Derive `show` for `Password` using the `Generic` instance.
+instance showPassword :: Show Password where
+  show = Generic.Show.genericShow
 
 -- | Validate that the field of a form is non-empty, has at least one special
 -- | character, and is longer than `passwordMinLength`.
@@ -221,4 +236,4 @@ main =
     formatValidationOutput =
       Bifunctor.bimap
       (Array.fromFoldable <<< ((map <<< map) (Array.fromFoldable)))
-      (Unsafe.Global.unsafeStringify)
+      show

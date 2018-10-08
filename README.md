@@ -10,13 +10,13 @@ To do:
 
 # purescript-validation-experiment
 
-## What Is this
+## What is this?
 This repo is just a little test of the `purescript-validation` library, mainly
 for my own edification, but also hopefully to give an example of how both the
 `Semigroup` and `Semiring` versions of `Data.Validation`'s `V` type can prove
 useful when validating input.
 
-## How Do I Use This?
+## How do I use this?
 First, ensure that you have `node` and `npm` installed.
 
 Then, clone this repo...
@@ -38,7 +38,7 @@ Then, clone this repo...
     invalid ([(BadEmail [InvalidEmailAddress]),(BadPassword [NoSpecialCharacter])])
     invalid ([(BadPassword [NoSpecialCharacter])])
     invalid ([(BadPassword [LessThanMinLength])])
-    pure ("{\"email\":\"good@email.com\",\"password\":\"abc123+-=\"}")
+    pure ("{ email: (Email \"good@email.com\"), password: (Password \"abc123+-=\") }")
 
 
     Semiring Validation:
@@ -47,19 +47,15 @@ Then, clone this repo...
     invalid ([(BadPassword [NoSpecialCharacter])])
     invalid ([(BadPassword [LessThanMinLength])])
     invalid ([(BadContact [InvalidEmailAddress,InvalidPhoneNumber])])
-    pure ("{\"contact\":{\"value0\":\"good@email.com\"},\"password\":\"abc123+-=\"}")
-    pure ("{\"contact\":{\"value0\":\"+1 (555) 555-5555\"},\"password\":\"abc123+-=\"}")
+    pure ("{ contact: (Email \"good@email.com\"), password: (Password \"abc123+-=\") }")
+    pure ("{ contact: (PhoneNumber \"+1 (555) 555-5555\"), password: (Password \"abc123+-=\") }")
 
-Note that the `Semiring` validator has a record with a `value0` key in its
-`Valid` results. This is due to the unsafe stringification of `Contact`, which
-is a sum type.
-
-## What's Going On Here?
+## What's going on here?
 To see a relatively straightforward validator whose `Applicative` instance uses
 `Semigroup` to accumulate errors, check out
 [`src/Semigroup`](src/Semigroup.purs).
 
 To see a relatively straightforward validator that uses `Semigroup` to
 accumulate errors while performing validation with the `Applicative` instance,
-`Semiring` to accumulate errors while validation with the `Alt` instance, check
+`Semiring` to accumulate errors while validating with the `Alt` instance, check
 out [`src/Semiring`](src/Semiring.purs).
