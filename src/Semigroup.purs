@@ -32,6 +32,12 @@ unsafeRegexFromString str =
   let regex = Regex.regex str Regex.Flags.noFlags
   in Partial.unsafePartial (Either.fromRight regex)
 
+-- runValidationParser :: forall a. StringParser.Parser a -> String -> Either ValidationError a
+-- runValidationParser x
+
+runParser :: forall a. StringParser.Parser a -> String -> Either.Either { pos :: StringParser.Pos, error :: StringParser.ParseError } a
+runParser (StringParser.Parser p) s = map _.result (p { str: s, pos: 0 })
+
 --------------------------------------------------------------------------------
 -- | Regular expression for email address validation.
 emailRegex :: Regex.Regex
@@ -63,9 +69,11 @@ parseEmail = StringParser.try $ do
   pure full
 
 --------------------------------------------------------------------------------
+type ErrorMessage = String
+
 data ValidationError
   = EmptyField
-  | InvalidEmailAddress
+  | InvalidEmailAddress ErrorMessage
   | NoSpecialCharacter
   | LessThanMinLength
 
@@ -87,19 +95,19 @@ validateNonEmpty str
   | otherwise = pure str
 
 -- | Validate that the field of a form is a valid email address.
-validateEmailRegex :: String -> Validation.V ValidationErrors String
-validateEmailRegex email
-  | Regex.test emailRegex email = pure email
-  | otherwise = Validation.invalid $ NonEmptyList.singleton InvalidEmailAddress
+-- validateEmailRegex :: String -> Validation.V ValidationErrors String
+-- validateEmailRegex email
+--   | Regex.test emailRegex email = pure email
+--   | otherwise = Validation.invalid $ NonEmptyList.singleton InvalidEmailAddress
 
 -- | Validate that the field of a form is a valid email address.
 -- | TODO: Make this actually do something instead of just Left/Right
 -- |   check on parser result
 validateEmailWithParser :: String -> Validation.V ValidationErrors String
 validateEmailWithParser email =
-  case (StringParser.runParser parseEmail email) of
-    Either.Left _ -> Validation.invalid $ NonEmptyList.singleton InvalidEmailAddress
-    Either.Right _ -> pure email
+  case (runParser parseEmail email) of
+    Either.Left { error: StringParser.ParseError s } -> Validation.invalid $ NonEmptyList.singleton $ InvalidEmailAddress s
+    Either.Right email' -> pure email'
 
 -- | Validate that the field of a form has at least one special character.
 validatePasswordRegex :: String -> Validation.V ValidationErrors String
@@ -237,3 +245,4 @@ main =
       Bifunctor.bimap
       (Array.fromFoldable <<< ((map <<< map) (Array.fromFoldable)))
       show
+-- main = Console.logShow $ runParser parseEmail ""
